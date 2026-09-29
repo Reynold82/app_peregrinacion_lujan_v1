@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <title>Peregrinación a Luján 2026 - PWA Logística y Control</title>
+    <meta name="description" content="Sistema PWA para la Peregrinación a Luján 2026 con escáner QR de postas en ruta, base offline Dexie.js, sincronización y dashboard de coordinación arquidiocesana." />
+    
+    <!-- OpenGraph & Twitter -->
+    <meta property="og:title" content="Peregrinación a Luján 2026 - PWA Logística y Control" />
+    <meta property="og:description" content="Sistema PWA para la Peregrinación a Luján 2026 con escáner QR de postas en ruta, base offline Dexie.js, sincronización y dashboard de coordinación arquidiocesana." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- PWA & Mobile Web App Compliance -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Luján 2026" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-slate-50 font-sans text-slate-800 antialiased selection:bg-slate-900 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Service Worker registration for PWA offline capabilities
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('PWA Service Worker registrado con éxito:', reg.scope);
+          }).catch((err) => {
+            console.warn('Error registrando Service Worker:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Peregrinación a Luján 2026 - PWA Logística y Control",
+  "description": "Sistema PWA para la Peregrinación a Luján 2026 con escáner QR de postas en ruta, base offline Dexie.js, sincronización y dashboard de coordinación arquidiocesana.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

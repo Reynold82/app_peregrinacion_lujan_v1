@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Peregrinación Luján 2026",
+  "short_name": "Luján 2026",
+  "description": "Monitoreo y Control de Peregrinos en Ruta 7 con soporte Offline y escáner QR.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0f172a",
+  "background_color": "#f8fafc",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
