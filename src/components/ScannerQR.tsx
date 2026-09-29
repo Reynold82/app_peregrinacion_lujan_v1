@@ -32,12 +32,22 @@ export const ScannerQR: React.FC<ScannerQRProps> = ({
         });
         scannerRef.current = html5QrCode;
 
-        const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
+        // Configuración responsive para calcular el tamaño óptimo de detección
+        const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const qrboxSize = Math.max(160, Math.floor(minEdge * 0.7));
+          return {
+            width: qrboxSize,
+            height: qrboxSize,
+          };
         };
 
+        const config = {
+          fps: 15,
+          qrbox: qrboxFunction,
+        };
+
+        // En móviles usar facingMode exacto o preferred
         await html5QrCode.start(
           { facingMode: currentFacingMode },
           config,
@@ -110,19 +120,23 @@ export const ScannerQR: React.FC<ScannerQRProps> = ({
 
   return (
     <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between p-4 text-white">
-      {/* Fondo simulación de terreno en ruta */}
-      <div 
-        className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80')`,
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/80 pointer-events-none" />
+      {/* Fondo de espera: solo se muestra si NO está escaneando */}
+      {!isScanning && (
+        <>
+          <div 
+            className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80')`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/80 pointer-events-none" />
+        </>
+      )}
 
       {/* Camera feed viewport container for html5-qrcode */}
       <div 
         id={containerId} 
-        className="absolute inset-0 w-full h-full object-cover flex items-center justify-center overflow-hidden [&_video]:w-full [&_video]:h-full [&_video]:object-cover"
+        className="absolute inset-0 w-full h-full z-0 overflow-hidden"
       />
 
       {/* Top Bar of the Camera Viewport */}

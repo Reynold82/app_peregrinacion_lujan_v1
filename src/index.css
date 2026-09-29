@@ -58,3 +58,28 @@
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Reglas críticas para html5-qrcode en móviles */
+#qr-camera-viewport {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  border: none !important;
+}
+
+#qr-camera-viewport video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 1rem !important;
+}
+
+#qr-camera-viewport canvas {
+  display: none !important;
+}
+
+#qr-shaded-region {
+  border-color: rgba(0, 0, 0, 0.35) !important;
+}
