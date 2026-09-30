@@ -21,7 +21,10 @@ import {
   BatteryCharging, 
   Phone, 
   Clock,
-  Sparkles
+  Sparkles,
+  QrCode,
+  ScanLine,
+  X
 } from 'lucide-react';
 
 interface RouteTakerViewProps {
@@ -45,10 +48,8 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
   onRegistrarPaso,
   isOnline,
 }) => {
-  // Peregrino detectado o seleccionado
-  const [selectedPeregrino, setSelectedPeregrino] = useState<Peregrino | null>(() => {
-    return peregrinos.find(p => p.id === 'PL-084') || peregrinos[0] || null;
-  });
+  // Peregrino detectado o seleccionado (inicia vacío a la espera del primer escaneo)
+  const [selectedPeregrino, setSelectedPeregrino] = useState<Peregrino | null>(null);
 
   const [manualQuery, setManualQuery] = useState('');
   const [showHistory, setShowHistory] = useState(false);
@@ -255,7 +256,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
             />
 
             {/* 2. Tarjeta del Resultado de Escaneo (Inmediatamente debajo del visor QR) */}
-            {selectedPeregrino && (
+            {selectedPeregrino ? (
               <div className="bg-white rounded-2xl shadow-md border-2 border-emerald-500/50 overflow-hidden flex flex-col transition-all animate-fade-in">
                 {/* Header de Peregrino Identificado */}
                 <div className="bg-slate-900 px-4 py-2.5 flex items-center justify-between text-white">
@@ -265,9 +266,19 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                       {activePosta === 'Parroquia (Micro)' ? 'Presente en Parroquia' : 'Peregrino Identificado'}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    Acreditación Activa
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Acreditación Activa
+                    </span>
+                    <button
+                      onClick={() => setSelectedPeregrino(null)}
+                      type="button"
+                      className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition"
+                      title="Cerrar y volver a estado de espera"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="p-3.5 sm:p-4 flex flex-col gap-3.5">
@@ -408,6 +419,27 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                   </div>
                 </div>
               </div>
+            ) : (
+              /* CARD DE ESTADO DE ESPERA: AÚN NO SE HAN ESCANEADO DATOS */
+              <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col items-center justify-center text-center transition-all animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 mb-3 shadow-xs">
+                  <ScanLine className="w-7 h-7 text-slate-500 animate-pulse" />
+                </div>
+
+                <div className="flex flex-col gap-1 max-w-sm">
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-800">
+                    Aún no se han escaneado datos
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Apunta la cámara al código QR de la credencial o pulsera oficial del peregrino, o selecciónalo mediante la búsqueda manual inferior.
+                  </p>
+                </div>
+
+                <div className="mt-3.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-600">
+                  <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Padrón 2026 listo: 234 peregrinos habilitados</span>
+                </div>
+              </div>
             )}
 
             {/* 3. Búsqueda Manual (Abajo del todo en la columna de trabajo) */}
@@ -472,18 +504,6 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
 
           {/* COLUMNA 2: Métricas del Puesto Activo (5 cols en desktop) */}
           <section className="lg:col-span-5 flex flex-col gap-3.5">
-            {!selectedPeregrino && (
-              <div className="bg-white rounded-2xl p-6 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[160px]">
-                <Search className="w-8 h-8 mb-2 text-slate-300" />
-                <p className="font-semibold text-xs sm:text-sm text-slate-600">
-                  {activePosta === 'Parroquia (Micro)' ? 'Enfoca el QR o busca para marcar presente' : 'Enfoca el código QR o busca un peregrino'}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  El resultado del escaneo aparecerá inmediatamente debajo de la cámara
-                </p>
-              </div>
-            )}
-
             {/* MÉTRICAS DEL PUESTO ACTIVO */}
             <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200 flex flex-col gap-3">
               <div className="flex items-center justify-between">

@@ -30,11 +30,11 @@ export interface Peregrino {
   dni?: string;
   edad?: number;
   telefono: string;
-  parroquia: string;
+  parroquia?: string;
   comunidad?: string;
   grupoRuta?: string;
   factorSanguineo?: string;
-  fotoUrl: string;
+  fotoUrl?: string;
   rol?: 'PEREGRINO' | 'COORDINADOR' | 'SANIDAD' | 'APOYO';
   
   // Datos médicos opcionales (deprecados para vista simplificada)
