@@ -1,6 +1,7 @@
 export type EstadoPeregrino = 'CAMINANDO' | 'MOVIL_APOYO' | 'BAJA';
 
 export type PostaNombre = 
+  | 'Parroquia (Micro)'
   | 'Morón'
   | 'Merlo'
   | 'La Reja'
@@ -26,7 +27,8 @@ export interface Peregrino {
   idCorto: string; // #PL-001
   nombre: string;
   apellido: string;
-  dni: string;
+  dni?: string;
+  edad?: number;
   telefono: string;
   parroquia: string;
   comunidad?: string;

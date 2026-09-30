@@ -89,7 +89,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
         p.nombre.toLowerCase().includes(q) ||
         p.apellido.toLowerCase().includes(q) ||
         p.idCorto.toLowerCase().includes(q) ||
-        p.dni.toLowerCase().includes(q)
+        (p.dni && p.dni.toLowerCase().includes(q))
       )
       .slice(0, 4);
   }, [peregrinos, manualQuery]);
@@ -116,7 +116,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
     const foundId = match ? match[0].toUpperCase() : targetId;
 
     const found = peregrinos.find(
-      p => p.id === foundId || p.idCorto.toUpperCase() === `#${foundId}` || p.dni.includes(targetId)
+      p => p.id === foundId || p.idCorto.toUpperCase() === `#${foundId}` || (p.dni && p.dni.includes(targetId))
     );
 
     if (found) {
@@ -190,7 +190,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
               Puesto de Apoyo (Ruta Nacional 7)
             </span>
             <span className="text-[11px] font-bold text-slate-800">
-              Paso {POSTAS_INFO.findIndex(p => p.nombre === activePosta) + 1} de 6
+              Paso {POSTAS_INFO.findIndex(p => p.nombre === activePosta) + 1} de {POSTAS_INFO.length}
             </span>
           </div>
 
@@ -246,91 +246,32 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
 
         {/* CORE WORKSPACE: Optimizado 100% para celulares (apilado limpio y claro) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-          {/* COLUMNA 1: Visor QR + Búsqueda Manual (7 cols en desktop) */}
+          {/* COLUMNA 1: Visor QR + Ficha de Peregrino Escaneado + Búsqueda Manual (7 cols en desktop) */}
           <section className="lg:col-span-7 flex flex-col gap-3.5">
-            {/* Visor de Cámara QR */}
+            {/* 1. Visor de Cámara QR */}
             <ScannerQR
               onScanSuccess={handleQRDecoded}
               onSimulateDemo={handleSimulateDemo}
             />
 
-            {/* Búsqueda Manual */}
-            <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200 flex flex-col gap-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Search className="w-4 h-4 text-slate-700" />
-                  <h2 className="font-bold text-sm text-slate-900">Búsqueda Manual</h2>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
-                  Falla de QR
-                </span>
-              </div>
-
-              <div className="relative w-full">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar por Apellido, Nombre, DNI o ID (#PL-...)..."
-                  value={manualQuery}
-                  onChange={(e) => setManualQuery(e.target.value)}
-                  className="w-full h-11 pl-9 pr-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-                />
-              </div>
-
-              {/* Coincidencias rápidas sugeridas */}
-              <div className="flex flex-col gap-1.5 mt-0.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Peregrinos en tránsito por este tramo:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {sugerenciasManuales.map((p) => (
-                    <div
-                      key={p.id}
-                      className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition"
-                    >
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-xs text-slate-900 truncate">
-                          {p.nombre} {p.apellido}
-                        </span>
-                        <span className="text-[10px] text-slate-500 truncate font-mono">
-                          {p.idCorto} • DNI {p.dni}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSelectedPeregrino(p);
-                          triggerFeedback(`Cargado: ${p.nombre} ${p.apellido} (${p.idCorto})`, 'success');
-                        }}
-                        type="button"
-                        className="h-8 px-2.5 shrink-0 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1 active:scale-95"
-                      >
-                        <span>Cargar</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* COLUMNA 2: Tarjeta de Peregrino Identificado (Solo lo Básico) + 3 Botones (5 cols en desktop) */}
-          <section className="lg:col-span-5 flex flex-col gap-3.5">
-            {selectedPeregrino ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col transition-all">
+            {/* 2. Tarjeta del Resultado de Escaneo (Inmediatamente debajo del visor QR) */}
+            {selectedPeregrino && (
+              <div className="bg-white rounded-2xl shadow-md border-2 border-emerald-500/50 overflow-hidden flex flex-col transition-all animate-fade-in">
                 {/* Header de Peregrino Identificado */}
                 <div className="bg-slate-900 px-4 py-2.5 flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span className="font-bold text-xs sm:text-sm tracking-tight">Peregrino Identificado</span>
+                    <span className="font-bold text-xs sm:text-sm tracking-tight">
+                      {activePosta === 'Parroquia (Micro)' ? 'Presente en Parroquia' : 'Peregrino Identificado'}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                    Ahora mismo
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Acreditación Activa
                   </span>
                 </div>
 
                 <div className="p-3.5 sm:p-4 flex flex-col gap-3.5">
-                  {/* Foto y Datos Nominales BÁSICOS Únicamente: Nombre, Apellido, DNI, Teléfono, ID */}
+                  {/* Foto y Datos Nominales BÁSICOS: Nombre, Apellido, Edad, Teléfono, ID */}
                   <div className="flex items-center gap-3">
                     <div className="relative shrink-0">
                       <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shadow-xs overflow-hidden">
@@ -352,9 +293,16 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 font-mono font-bold text-xs text-slate-800 border border-slate-200">
                           {selectedPeregrino.idCorto}
                         </span>
-                        <span className="text-xs text-slate-600 font-mono font-semibold">
-                          DNI: {selectedPeregrino.dni}
-                        </span>
+                        {selectedPeregrino.edad && (
+                          <span className="px-2 py-0.5 rounded-md bg-amber-50 font-bold text-xs text-amber-800 border border-amber-200">
+                            {selectedPeregrino.edad} años
+                          </span>
+                        )}
+                        {selectedPeregrino.dni && (
+                          <span className="text-xs text-slate-600 font-mono font-semibold">
+                            DNI: {selectedPeregrino.dni}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 mt-1.5">
@@ -391,9 +339,9 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                       Acción necesaria:
                     </span>
 
-                    {/* 1. Confirmar Paso por Puesto de Apoyo (Verde) */}
+                    {/* 1. Confirmar Paso por Puesto de Apoyo / Marcar Presente en Parroquia */}
                     <button
-                      onClick={() => handleAction('CAMINANDO', `Confirmado en Puesto ${activePosta}`)}
+                      onClick={() => handleAction('CAMINANDO', activePosta === 'Parroquia (Micro)' ? 'Presente en Parroquia / Subió al Micro' : `Confirmado en Puesto ${activePosta}`)}
                       disabled={isProcessing}
                       type="button"
                       className="w-full min-h-[52px] px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white flex items-center justify-between shadow-xs transition disabled:opacity-50"
@@ -403,9 +351,11 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                           <UserCheck className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col text-left">
-                          <span className="font-bold text-xs sm:text-sm leading-tight">Confirmar Paso por Puesto</span>
+                          <span className="font-bold text-xs sm:text-sm leading-tight">
+                            {activePosta === 'Parroquia (Micro)' ? 'Marcar Presente (Sube al Micro)' : 'Confirmar Paso por Puesto'}
+                          </span>
                           <span className="text-[11px] text-emerald-100 leading-none">
-                            Registrar en Puesto {activePosta} (Km {puestoConfig.km})
+                            {activePosta === 'Parroquia (Micro)' ? 'Acreditado para salida hacia Liniers' : `Registrar en Puesto ${activePosta} (Km ${puestoConfig.km})`}
                           </span>
                         </div>
                       </div>
@@ -414,7 +364,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
 
                     {/* 2. Subió a Móvil de Apoyo (Amarillo / Naranja) */}
                     <button
-                      onClick={() => handleAction('MOVIL_APOYO', `Subió a Móvil en Puesto ${activePosta}`)}
+                      onClick={() => handleAction('MOVIL_APOYO', `Subió a Móvil en ${activePosta}`)}
                       disabled={isProcessing}
                       type="button"
                       className="w-full min-h-[52px] px-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-slate-950 flex items-center justify-between shadow-xs transition disabled:opacity-50"
@@ -433,9 +383,9 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                       <ArrowRight className="w-5 h-5 text-slate-950" />
                     </button>
 
-                    {/* 3. Retirado / Abandono (Rojo) */}
+                    {/* 3. Retirado / Abandono / Ausente (Rojo) */}
                     <button
-                      onClick={() => handleAction('BAJA', `Retirado en Puesto ${activePosta}`)}
+                      onClick={() => handleAction('BAJA', activePosta === 'Parroquia (Micro)' ? 'Ausente en Parroquia' : `Retirado en Puesto ${activePosta}`)}
                       disabled={isProcessing}
                       type="button"
                       className="w-full min-h-[52px] px-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white flex items-center justify-between shadow-xs transition disabled:opacity-50"
@@ -445,9 +395,11 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                           <UserX className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col text-left">
-                          <span className="font-bold text-xs sm:text-sm leading-tight">Retirado / Abandono</span>
+                          <span className="font-bold text-xs sm:text-sm leading-tight">
+                            {activePosta === 'Parroquia (Micro)' ? 'Ausente / No Viaja' : 'Retirado / Abandono'}
+                          </span>
                           <span className="text-[11px] text-rose-100 leading-none">
-                            Fin de marcha por fatiga o derivación
+                            {activePosta === 'Parroquia (Micro)' ? 'No asistió a la salida del micro' : 'Fin de marcha por fatiga o derivación'}
                           </span>
                         </div>
                       </div>
@@ -456,11 +408,79 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="bg-white rounded-2xl p-6 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[220px]">
+            )}
+
+            {/* 3. Búsqueda Manual (Abajo del todo en la columna de trabajo) */}
+            <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-slate-700" />
+                  <h2 className="font-bold text-sm text-slate-900">Búsqueda Manual</h2>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
+                  Toma por Nombre
+                </span>
+              </div>
+
+              <div className="relative w-full">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar por Apellido, Nombre o ID (#PL-...)..."
+                  value={manualQuery}
+                  onChange={(e) => setManualQuery(e.target.value)}
+                  className="w-full h-11 pl-9 pr-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                />
+              </div>
+
+              {/* Coincidencias rápidas sugeridas */}
+              <div className="flex flex-col gap-1.5 mt-0.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  {activePosta === 'Parroquia (Micro)' ? 'Peregrinos convocados en la Parroquia:' : 'Peregrinos en tránsito por este tramo:'}
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {sugerenciasManuales.map((p) => (
+                    <div
+                      key={p.id}
+                      className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-xs text-slate-900 truncate">
+                          {p.nombre} {p.apellido}
+                        </span>
+                        <span className="text-[10px] text-slate-500 truncate font-mono">
+                          {p.idCorto} {p.edad ? `• ${p.edad} años` : ''} {p.dni ? `• DNI ${p.dni}` : ''}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedPeregrino(p);
+                          triggerFeedback(`Cargado: ${p.nombre} ${p.apellido} (${p.idCorto})`, 'success');
+                        }}
+                        type="button"
+                        className="h-8 px-2.5 shrink-0 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1 active:scale-95"
+                      >
+                        <span>Cargar</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* COLUMNA 2: Métricas del Puesto Activo (5 cols en desktop) */}
+          <section className="lg:col-span-5 flex flex-col gap-3.5">
+            {!selectedPeregrino && (
+              <div className="bg-white rounded-2xl p-6 text-center text-slate-400 border border-slate-200 flex flex-col items-center justify-center min-h-[160px]">
                 <Search className="w-8 h-8 mb-2 text-slate-300" />
-                <p className="font-semibold text-xs sm:text-sm text-slate-600">Enfoca el código QR o busca un peregrino</p>
-                <p className="text-[11px] text-slate-400 mt-1">Los datos básicos y los 3 botones de acción aparecerán aquí</p>
+                <p className="font-semibold text-xs sm:text-sm text-slate-600">
+                  {activePosta === 'Parroquia (Micro)' ? 'Enfoca el QR o busca para marcar presente' : 'Enfoca el código QR o busca un peregrino'}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  El resultado del escaneo aparecerá inmediatamente debajo de la cámara
+                </p>
               </div>
             )}
 

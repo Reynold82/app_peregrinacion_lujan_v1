@@ -22,7 +22,7 @@ import { ShieldCheck, WifiOff } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('toma-en-ruta');
-  const [activePosta, setActivePosta] = useState<PostaNombre>('Merlo');
+  const [activePosta, setActivePosta] = useState<PostaNombre>('Parroquia (Micro)');
   const [tomadorNombre] = useState<string>('Hno. Lucas');
 
   const [peregrinos, setPeregrinos] = useState<Peregrino[]>([]);

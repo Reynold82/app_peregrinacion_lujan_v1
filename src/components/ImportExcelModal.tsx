@@ -48,41 +48,70 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
         normalizedRow[cleanKey] = row[k];
       });
 
-      // Extraer nombre y apellido
+      // Extraer nombre y apellido (Soporta: 'apellido_nombre', 'apellido y nombre', 'nombre_apellido', etc.)
       let nombre = normalizedRow['nombre'] || normalizedRow['nombres'] || '';
       let apellido = normalizedRow['apellido'] || normalizedRow['apellidos'] || '';
 
-      if (!nombre && !apellido && normalizedRow['nombre y apellido']) {
-        const parts = String(normalizedRow['nombre y apellido']).trim().split(' ');
-        apellido = parts.pop() || '';
-        nombre = parts.join(' ') || '';
+      const combinedFullName = normalizedRow['apellido_nombre'] || 
+        normalizedRow['apellido nombre'] || 
+        normalizedRow['apellidonombre'] ||
+        normalizedRow['apellido y nombre'] ||
+        normalizedRow['nombre_apellido'] || 
+        normalizedRow['nombre y apellido'] ||
+        normalizedRow['peregrino'] ||
+        normalizedRow['persona'] ||
+        '';
+
+      if ((!nombre || !apellido) && combinedFullName) {
+        const fullStr = String(combinedFullName).trim();
+        // Si viene "Apellido Nombre" (ej. "Abasolo Maria Eugenia" o "Acosta Leonardo Miguel")
+        const parts = fullStr.split(/\s+/).filter(Boolean);
+        if (parts.length === 1) {
+          apellido = parts[0];
+          nombre = '';
+        } else if (parts.length === 2) {
+          // El primero es apellido, el segundo nombre
+          apellido = parts[0];
+          nombre = parts[1];
+        } else if (parts.length >= 3) {
+          // Si el primer término es compuesto o primer apellido
+          // En listados tipo "Abasolo Maria Eugenia", el 1er token suele ser apellido
+          apellido = parts[0];
+          nombre = parts.slice(1).join(' ');
+        }
       }
 
-      if (!nombre && !apellido && normalizedRow['peregrino']) {
-        const parts = String(normalizedRow['peregrino']).trim().split(' ');
-        apellido = parts.pop() || '';
-        nombre = parts.join(' ') || '';
+      if (!nombre && !apellido) {
+        nombre = `Peregrino`;
+        apellido = `#${index + 1}`;
       }
 
-      if (!nombre) nombre = `Peregrino`;
-      if (!apellido) apellido = `#${index + 1}`;
+      // Extraer Edad
+      const edadRaw = normalizedRow['edad'] || normalizedRow['anos'] || normalizedRow['anios'];
+      const edad = edadRaw ? parseInt(String(edadRaw).replace(/\D/g, ''), 10) || undefined : undefined;
 
-      // Extraer DNI
-      const dni = String(
-        normalizedRow['dni'] || 
+      // Extraer DNI (opcional)
+      const dniVal = normalizedRow['dni'] || 
         normalizedRow['documento'] || 
         normalizedRow['doc'] || 
-        `${30 + (index % 15)}.${(100 + index).toString().slice(0, 3)}.000`
-      ).trim();
+        '';
+      const dni = dniVal ? String(dniVal).trim() : undefined;
 
       // Extraer Teléfono
-      const telefono = String(
+      let telefonoRaw = String(
         normalizedRow['telefono'] || 
         normalizedRow['celular'] || 
         normalizedRow['tel'] || 
         normalizedRow['contacto'] || 
-        '11 4000-0000'
-      ).trim();
+        ''
+      ).replace(/[^\d+]/g, '').trim();
+
+      if (!telefonoRaw) {
+        telefonoRaw = '11 4000-0000';
+      } else if (telefonoRaw.startsWith('11') && telefonoRaw.length === 10) {
+        telefonoRaw = `11 ${telefonoRaw.slice(2, 6)}-${telefonoRaw.slice(6)}`;
+      }
+      const telefono = telefonoRaw;
 
       // Extraer o generar ID
       const numId = index + 1;
@@ -193,10 +222,10 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
   // Descargar plantilla oficial
   const handleDownloadTemplate = () => {
     const templateData = [
-      { 'Nombre': 'Ignacio', 'Apellido': 'Morales', 'DNI': '40.920.112', 'Telefono': '11 4920-1122' },
-      { 'Nombre': 'Valeria', 'Apellido': 'Gómez', 'DNI': '36.623.884', 'Telefono': '11 6623-8840' },
-      { 'Nombre': 'Santiago', 'Apellido': 'Benítez', 'DNI': '42.401.299', 'Telefono': '11 5401-2993' },
-      { 'Nombre': 'Lucía', 'Apellido': 'Navarro', 'DNI': '43.112.776', 'Telefono': '11 3112-7765' }
+      { 'apellido_nombre': 'Abásolo Maria Eugenia', 'telefono': '1141492055', 'edad': 21 },
+      { 'apellido_nombre': 'Acosta Leonardo Miguel', 'telefono': '1132529747', 'edad': 44 },
+      { 'apellido_nombre': 'Agüero Valdez Gustavo Ariel', 'telefono': '1151193934', 'edad': 27 },
+      { 'apellido_nombre': 'Ale Zoe Victoria', 'telefono': '1154560496', 'edad': 26 }
     ];
 
     const ws = XLSX.utils.json_to_sheet(templateData);

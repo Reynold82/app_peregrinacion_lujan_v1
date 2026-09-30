@@ -118,14 +118,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   // 4. Exportar CSV
   const handleExportCSV = () => {
     const headers = [
-      'ID,Nombre,Apellido,DNI,Telefono,Estado,Detalle,Ultimo Puesto,Ultimo Registro,Tomador'
+      'ID,Nombre,Apellido,Edad,DNI,Telefono,Estado,Detalle,Ultimo Puesto,Ultimo Registro,Tomador'
     ];
 
     const rows = peregrinos.map(p => [
       `"${p.idCorto}"`,
       `"${p.nombre}"`,
       `"${p.apellido}"`,
-      `"${p.dni}"`,
+      `"${p.edad || ''}"`,
+      `"${p.dni || ''}"`,
       `"${p.telefono}"`,
       `"${p.estadoActual}"`,
       `"${p.subEstadoDetalle || ''}"`,
@@ -521,7 +522,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <tr>
                   <th className="py-2.5 px-3">ID</th>
                   <th className="py-2.5 px-3">Peregrino / Contacto</th>
-                  <th className="py-2.5 px-3">DNI</th>
+                  <th className="py-2.5 px-3">Edad / DNI</th>
                   <th className="py-2.5 px-3">Estado Actual</th>
                   <th className="py-2.5 px-3">Último Puesto & Hora</th>
                   <th className="py-2.5 px-3 text-right">Acciones</th>
@@ -557,9 +558,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </div>
                         </td>
 
-                        {/* DNI */}
+                        {/* Edad / DNI */}
                         <td className="py-3 px-3 whitespace-nowrap font-mono text-slate-600">
-                          {p.dni}
+                          <div className="flex flex-col">
+                            {p.edad ? <span className="font-bold text-slate-800">{p.edad} años</span> : null}
+                            {p.dni ? <span className="text-[10px] text-slate-400">DNI: {p.dni}</span> : (!p.edad ? <span className="text-slate-400">-</span> : null)}
+                          </div>
                         </td>
 
                         {/* Estado Actual */}

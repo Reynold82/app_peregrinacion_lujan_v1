@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import QRCode from 'qrcode';
 import { Peregrino } from '../types';
 import { 
   Printer, 
@@ -29,12 +30,64 @@ export const CredentialsView: React.FC<CredentialsViewProps> = ({ peregrinos }) 
   // 8 credenciales por pliego A4
   const credentialsPerSheet = 8;
   const totalSheets = Math.ceil(peregrinos.length / credentialsPerSheet);
+  const sheetsPerBatch = 4;
+  const totalBatches = Math.max(1, Math.ceil(totalSheets / sheetsPerBatch));
+
+  // Generación dinámica de lotes
+  const batchList = useMemo(() => {
+    const list: { id: number; label: string }[] = [];
+    for (let b = 1; b <= totalBatches; b++) {
+      const startPilgrim = (b - 1) * sheetsPerBatch * credentialsPerSheet + 1;
+      const endPilgrim = Math.min(peregrinos.length, b * sheetsPerBatch * credentialsPerSheet);
+      list.push({
+        id: b,
+        label: `Lote ${b} (PL-${startPilgrim.toString().padStart(3, '0')} a PL-${endPilgrim.toString().padStart(3, '0')})`,
+      });
+    }
+    return list;
+  }, [totalBatches, peregrinos.length]);
 
   // Pliego activo
   const sheetPilgrims = useMemo(() => {
     const start = (currentSheet - 1) * credentialsPerSheet;
     return peregrinos.slice(start, start + credentialsPerSheet);
   }, [peregrinos, currentSheet]);
+
+  // Mapa de QRs SVG reales calculados con la librería estándar de QR
+  const [qrSvgMap, setQrSvgMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const generateAllQrs = async () => {
+      const entries: [string, string][] = [];
+      for (const p of sheetPilgrims) {
+        try {
+          // Genera el código QR estándar real en SVG
+          const svg = await QRCode.toString(p.idCorto, {
+            type: 'svg',
+            margin: 1,
+            errorCorrectionLevel: 'M',
+            width: 120,
+            color: {
+              dark: '#0f172a',
+              light: '#ffffff',
+            },
+          });
+          entries.push([p.idCorto, svg]);
+        } catch (e) {
+          console.error('Error generando QR para', p.idCorto, e);
+        }
+      }
+      if (isMounted) {
+        setQrSvgMap(Object.fromEntries(entries));
+      }
+    };
+
+    generateAllQrs();
+    return () => {
+      isMounted = false;
+    };
+  }, [sheetPilgrims]);
 
   const handlePrint = () => {
     window.print();
@@ -47,28 +100,6 @@ export const CredentialsView: React.FC<CredentialsViewProps> = ({ peregrinos }) 
       setPdfSuccess(true);
       setTimeout(() => setPdfSuccess(false), 2500);
     }, 1000);
-  };
-
-  // Render SVG QR Code simple y nítido para ID del peregrino
-  const renderQRCodeSvg = (idCorto: string) => {
-    const seed = idCorto.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (
-      <svg className="w-full h-full text-slate-900" viewBox="0 0 100 100" fill="currentColor">
-        <rect width="100" height="100" fill="white" />
-        <path d="M0,0 h32 v32 h-32 z M6,6 h20 v20 h-20 z M12,12 h8 v8 h-8 z" />
-        <path d="M68,0 h32 v32 h-32 z M74,6 h20 v20 h-20 z M80,12 h8 v8 h-8 z" />
-        <path d="M0,68 h32 v32 h-32 z M6,74 h20 v20 h-20 z M12,80 h8 v8 h-8 z" />
-        <rect x="44" y="10" width="8" height="8" />
-        <rect x="40" y={(seed % 15) + 20} width="16" height="8" />
-        <rect x="15" y="44" width="8" height="8" />
-        <rect x="42" y="42" width="16" height="16" />
-        <rect x="74" y="44" width="8" height="8" />
-        <rect x="80" y="55" width="8" height="16" />
-        <rect x="44" y="72" width="8" height="16" />
-        <rect x="62" y="78" width="16" height="8" />
-        <rect x={(seed % 20) + 60} y="88" width="12" height="6" />
-      </svg>
-    );
   };
 
   return (
@@ -138,13 +169,9 @@ export const CredentialsView: React.FC<CredentialsViewProps> = ({ peregrinos }) 
                 }}
                 className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer text-xs"
               >
-                <option value={1}>Lote 1 (PL-001 a PL-032)</option>
-                <option value={2}>Lote 2 (PL-033 a PL-064)</option>
-                <option value={3}>Lote 3 (PL-065 a PL-096)</option>
-                <option value={4}>Lote 4 (PL-097 a PL-128)</option>
-                <option value={5}>Lote 5 (PL-129 a PL-160)</option>
-                <option value={6}>Lote 6 (PL-161 a PL-192)</option>
-                <option value={7}>Lote 7 (PL-193 a PL-230)</option>
+                {batchList.map(b => (
+                  <option key={b.id} value={b.id}>{b.label}</option>
+                ))}
               </select>
             </div>
 
@@ -277,10 +304,12 @@ export const CredentialsView: React.FC<CredentialsViewProps> = ({ peregrinos }) 
                           Pqa. Nuestra Sra. de Luján Sarandí
                         </span>
 
-                        {/* DNI */}
-                        <span className="text-[10px] font-mono text-slate-500 font-semibold mt-0.5">
-                          DNI: {p.dni}
-                        </span>
+                        {/* Edad y/o DNI */}
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-mono text-slate-500 font-semibold">
+                          {p.edad && <span>Edad: {p.edad} años</span>}
+                          {p.edad && p.dni && <span>•</span>}
+                          {p.dni && <span>DNI: {p.dni}</span>}
+                        </div>
 
                         {/* Teléfono */}
                         <div className="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-slate-700 font-mono">
@@ -303,10 +332,17 @@ export const CredentialsView: React.FC<CredentialsViewProps> = ({ peregrinos }) 
                     </div>
 
                     <div 
-                      className="w-11 h-11 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-center shrink-0"
+                      className="w-12 h-12 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden [&_svg]:w-full [&_svg]:h-full"
                       title={`Código QR: ${p.idCorto}`}
                     >
-                      {renderQRCodeSvg(p.idCorto)}
+                      {qrSvgMap[p.idCorto] ? (
+                        <div 
+                          className="w-full h-full flex items-center justify-center"
+                          dangerouslySetInnerHTML={{ __html: qrSvgMap[p.idCorto] }}
+                        />
+                      ) : (
+                        <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin" />
+                      )}
                     </div>
                   </div>
                 </div>

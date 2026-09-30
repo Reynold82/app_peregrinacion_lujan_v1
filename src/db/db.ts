@@ -7,7 +7,7 @@ export class PeregrinacionDB extends Dexie {
   registrosPostas!: Table<RegistroPosta, number>;
 
   constructor() {
-    super('PeregrinacionLujan2026DB_V2');
+    super('PeregrinacionLujan2026DB_V3');
     this.version(1).stores({
       peregrinos: 'id, idCorto, estadoActual, ultimaPosta, apellido, nombre, dni',
       registrosPostas: '++id, peregrinoId, idCorto, posta, estado, timestamp, synched',
