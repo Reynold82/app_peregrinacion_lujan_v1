@@ -384,7 +384,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
             <button
               type="button"
               onClick={async () => {
-                if (window.confirm('¿Deseas restablecer el padrón a los 230 peregrinos de prueba?')) {
+                if (window.confirm('¿Deseas restablecer el padrón oficial definitivo a los 243 peregrinos?')) {
                   await onResetOriginal();
                   onClose();
                 }

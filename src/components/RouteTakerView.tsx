@@ -61,17 +61,34 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
     return POSTAS_INFO.find(p => p.nombre === activePosta) || POSTAS_INFO[1];
   }, [activePosta]);
 
-  // Historial local del puesto activo
+  // Historial local del puesto activo con deduplicación estricta por ID
   const historialPuesto = useMemo(() => {
-    return registrosPostas
+    const seen = new Set<string>();
+    const uniqueList: RegistroPosta[] = [];
+
+    const filtered = registrosPostas
       .filter(r => r.posta === activePosta)
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 10);
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    for (const r of filtered) {
+      const key = r.id ? String(r.id) : `${r.peregrinoId}_${r.posta}_${r.timestamp}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueList.push(r);
+      }
+    }
+
+    return uniqueList.slice(0, 10);
   }, [registrosPostas, activePosta]);
 
-  // Métricas del puesto activo
+  // Métricas del puesto activo (calculadas por peregrinos únicos registrados en la posta)
   const metricas = useMemo(() => {
-    const registrados = registrosPostas.filter(r => r.posta === activePosta).length;
+    const uniquePeregrinosEnPosta = new Set(
+      registrosPostas
+        .filter(r => r.posta === activePosta)
+        .map(r => r.peregrinoId)
+    );
+    const registrados = uniquePeregrinosEnPosta.size;
     const total = peregrinos.length;
     const pendientes = Math.max(0, total - registrados);
     const porcentaje = total > 0 ? ((registrados / total) * 100).toFixed(1) : '0';

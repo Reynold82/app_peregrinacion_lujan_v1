@@ -75,6 +75,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   // 2. Conteo por Puesto de Apoyo
   const densidadPuestos = useMemo(() => {
     const counts: Record<string, number> = {
+      'Parroquia (Micro)': 0,
       'Morón': 0,
       'Merlo': 0,
       'La Reja': 0,
@@ -176,15 +177,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             <button
               onClick={async () => {
-                if (window.confirm('⚠️ ¿Deseas limpiar todos los registros y comenzar la app en CERO absoluto para el día del evento?\n\n- Se mantendrán todos los peregrinos cargados.\n- Se borrarán los escaneos de prueba.\n- Los contadores de puestos volverán a 0.')) {
+                if (window.confirm('⚠️ ¿Deseas limpiar todos los registros y comenzar la app en CERO absoluto para el día del evento?\n\n- Se mantendrán todos los 243 peregrinos intactos.\n- Se borrarán los escaneos de prueba en la nube y en todos los celulares.\n- Todos los estados volverán a "Listo para iniciar marcha" sin registros de puesto.')) {
                   await onResetToZero();
                 }
               }}
               className="h-10 px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition active:scale-95"
-              title="Borra los registros de prueba y deja la app en cero para el día oficial"
+              title="Borra todos los escaneos de prueba de hoy y deja el padrón limpio para el día del evento"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-rose-600" />
-              <span>Limpiar y Poner en Cero</span>
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>Reiniciar Pruebas (Poner a Cero)</span>
             </button>
 
             <button
@@ -203,19 +204,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <FileSpreadsheet className="w-4 h-4 text-white" />
               <span>Importar Excel / CSV</span>
-            </button>
-
-            <button
-              onClick={async () => {
-                if (window.confirm('¿Deseas reiniciar las pruebas y poner todos los estados a cero para el inicio de la marcha? (Se mantendrán intactos los 243 peregrinos)')) {
-                  await onResetToZero();
-                }
-              }}
-              className="h-10 px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition active:scale-95"
-              title="Borra todos los escaneos de prueba de hoy y deja el padrón limpio para el día del evento"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-              <span>Reiniciar Pruebas</span>
             </button>
 
             <button
@@ -377,7 +365,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {/* Tarjetas de Puestos de Apoyo (Clickeables para filtrar) */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 pt-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 pt-1.5">
               {POSTAS_INFO.map((puesto) => {
                 const count = densidadPuestos[puesto.nombre] || 0;
                 const isSelected = selectedPosta === puesto.nombre;

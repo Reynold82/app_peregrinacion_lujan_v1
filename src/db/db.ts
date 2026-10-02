@@ -26,23 +26,6 @@ export async function seedDatabaseIfNeeded(): Promise<Peregrino[]> {
     if (count === 0) {
       const initialPilgrims = getInitialPilgrims();
       await db.peregrinos.bulkAdd(initialPilgrims);
-
-      // Crear algunos registros de puestos iniciales para alimentar el historial local
-      const initialPasses: RegistroPosta[] = initialPilgrims.slice(0, 35).map((p, idx) => ({
-        peregrinoId: p.id,
-        idCorto: p.idCorto,
-        nombreCompleto: `${p.nombre} ${p.apellido}`,
-        posta: p.ultimaPosta as PostaNombre,
-        estado: p.estadoActual,
-        detalle: p.subEstadoDetalle,
-        tomadorId: 'TOMADOR-04-MERLO',
-        tomadorNombre: p.tomadorUltimoRegistro || 'Hno. Lucas',
-        timestamp: p.ultimoTimestamp || Date.now() - (idx * 3) * 60 * 1000,
-        synched: 1, // Ya sincronizados
-        syncedAt: Date.now() - 30 * 1000,
-      }));
-
-      await db.registrosPostas.bulkAdd(initialPasses);
       return initialPilgrims;
     }
     return await db.peregrinos.toArray();

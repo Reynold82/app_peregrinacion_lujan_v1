@@ -107,7 +107,7 @@ export default function App() {
 
       if (firebaseActive && isOnline) {
         // Sincronización en tiempo real vía Firebase Cloud
-        const { peregrinoActualizado, registro } = await registrarPasoFirebase({
+        const { peregrinoActualizado } = await registrarPasoFirebase({
           peregrino: p,
           posta: activePosta,
           estado,
@@ -115,9 +115,9 @@ export default function App() {
           tomadorNombre,
         });
 
-        // Actualización optimista de estado
+        // Actualización optimista del peregrino (el historial vendrá de forma única vía onSnapshot de Firebase)
         setPeregrinos(prev => prev.map(item => item.id === peregrinoId ? peregrinoActualizado : item));
-        setRegistrosPostas(prev => [registro, ...prev]);
+        
         // Guardar copia local Dexie
         await registrarPasoEnPosta({
           peregrinoId,
@@ -138,7 +138,7 @@ export default function App() {
           isOnline: false,
         });
         setPeregrinos(prev => prev.map(item => item.id === peregrinoId ? peregrinoActualizado : item));
-        setRegistrosPostas(prev => [registro, ...prev]);
+        setRegistrosPostas(prev => [registro, ...prev.filter(r => r.id !== registro.id)]);
         await refreshPendingCount();
       }
     } catch (err) {
@@ -159,7 +159,7 @@ export default function App() {
       if (!p) return;
 
       if (firebaseActive && isOnline) {
-        const { peregrinoActualizado, registro } = await registrarPasoFirebase({
+        const { peregrinoActualizado } = await registrarPasoFirebase({
           peregrino: p,
           posta,
           estado,
@@ -167,7 +167,6 @@ export default function App() {
           tomadorNombre: 'Coordinador Central',
         });
         setPeregrinos(prev => prev.map(item => item.id === peregrinoId ? peregrinoActualizado : item));
-        setRegistrosPostas(prev => [registro, ...prev]);
       } else {
         const { peregrinoActualizado, registro } = await registrarPasoEnPosta({
           peregrinoId,
@@ -178,7 +177,7 @@ export default function App() {
           isOnline: false,
         });
         setPeregrinos(prev => prev.map(item => item.id === peregrinoId ? peregrinoActualizado : item));
-        setRegistrosPostas(prev => [registro, ...prev]);
+        setRegistrosPostas(prev => [registro, ...prev.filter(r => r.id !== registro.id)]);
       }
     } catch (err) {
       console.error('Error actualizando estado manual:', err);
