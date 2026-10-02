@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "Peregrino": {
+      "title": "Peregrino",
+      "description": "Ficha del peregrino en la base oficial",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "idCorto": { "type": "string" },
+        "nombre": { "type": "string" },
+        "apellido": { "type": "string" },
+        "dni": { "type": "string" },
+        "telefono": { "type": "string" },
+        "edad": { "type": "number" },
+        "estadoActual": { "type": "string" },
+        "subEstadoDetalle": { "type": "string" },
+        "ultimaPosta": { "type": "string" },
+        "ultimoTimestamp": { "type": "number" },
+        "tomadorUltimoRegistro": { "type": "string" }
+      },
+      "required": ["id", "idCorto", "nombre", "apellido", "estadoActual"]
+    },
+    "RegistroPosta": {
+      "title": "RegistroPosta",
+      "description": "Registro de paso individual por un puesto de apoyo",
+      "type": "object",
+      "properties": {
+        "peregrinoId": { "type": "string" },
+        "idCorto": { "type": "string" },
+        "nombreCompleto": { "type": "string" },
+        "posta": { "type": "string" },
+        "estado": { "type": "string" },
+        "detalle": { "type": "string" },
+        "tomadorId": { "type": "string" },
+        "tomadorNombre": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["peregrinoId", "idCorto", "posta", "estado", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/peregrinos/{peregrinoId}": {
+      "schema": "Peregrino",
+      "description": "Colección de los 243 peregrinos oficiales con su estado más reciente en la ruta"
+    },
+    "/registrosPostas/{registroId}": {
+      "schema": "RegistroPosta",
+      "description": "Historial en tiempo real de todos los pasos, escaneos y derivaciones médicas/móvil"
+    }
+  }
+}

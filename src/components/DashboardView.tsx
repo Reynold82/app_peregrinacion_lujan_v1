@@ -18,7 +18,8 @@ import {
   Edit3, 
   Navigation,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -202,6 +203,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <FileSpreadsheet className="w-4 h-4 text-white" />
               <span>Importar Excel / CSV</span>
+            </button>
+
+            <button
+              onClick={async () => {
+                if (window.confirm('¿Deseas reiniciar las pruebas y poner todos los estados a cero para el inicio de la marcha? (Se mantendrán intactos los 243 peregrinos)')) {
+                  await onResetToZero();
+                }
+              }}
+              className="h-10 px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition active:scale-95"
+              title="Borra todos los escaneos de prueba de hoy y deja el padrón limpio para el día del evento"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>Reiniciar Pruebas</span>
             </button>
 
             <button

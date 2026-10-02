@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función de ayuda para validar identificadores estándar
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Reglas para el padrón oficial de Peregrinos (lectura y actualización pública para los 14 colaboradores en ruta)
+    match /peregrinos/{peregrinoId} {
+      allow read: if true;
+      allow write: if isValidId(peregrinoId);
+    }
+
+    // Reglas para el historial de pasos por los Puestos de Apoyo
+    match /registrosPostas/{registroId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if true;
+    }
+
+    // Default deny para cualquier otra colección
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

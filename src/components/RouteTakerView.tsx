@@ -437,7 +437,7 @@ export const RouteTakerView: React.FC<RouteTakerViewProps> = ({
 
                 <div className="mt-3.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-600">
                   <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Padrón 2026 listo: 234 peregrinos habilitados</span>
+                  <span>Padrón 2026 listo: {peregrinos.length} peregrinos habilitados</span>
                 </div>
               </div>
             )}
